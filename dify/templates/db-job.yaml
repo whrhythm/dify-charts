@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: restore-db-job
+  labels:
+    app.kubernetes.io/managed-by: Helm
+spec:
+  template:
+    spec:
+      containers:
+      - name: restore-container
+        image: harbor.joiningos.com/library/postgresql:15.3.0-debian-11-r7
+        command: ["sh", "-c"]
+        args:
+          - |
+            #!/bin/bash
+            while true
+            do
+                if  PGPASSWORD=difyai123456 psql -h dify-postgresql-primary -U postgres -d dify -c "SELECT 1 FROM accounts"; then
+                    PGPASSWORD=difyai123456 pg_restore -U postgres -h dify-postgresql-primary -d dify -v /backup/backup.dump
+                    echo "OK"
+                    exit 0
+                fi
+                echo "wait ..."
+                sleep 2
+            done
+        volumeMounts:
+          - name: backup-volume
+            mountPath: /backup  # 这个路径下会有一个文件backup.dump（因为我们在下面items中指定了path）
+      volumes:
+        - name: backup-volume
+          configMap:
+            name: db-backup  # ConfigMap的名称
+            items:
+            - key: database-backup   # ConfigMap中的键
+              path: backup.dump      # 挂载后的文件名
+      restartPolicy: Never
+  backoffLimit: 4
