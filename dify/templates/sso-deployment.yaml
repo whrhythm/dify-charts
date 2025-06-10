@@ -1,0 +1,167 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dify-sso
+  labels:
+    app.kubernetes.io/name: dify-sso
+data:
+  # 服务配置
+  CONSOLE_WEB_URL: 'https://dify.joiningos.com:30001'
+  SECRET_KEY: ''
+  TENANT_ID: '72004859-7728-450e-85fd-be20e195ebe3'
+  EDITION: 'SELF_HOSTED'
+  ACCESS_TOKEN_EXPIRE_MINUTES: '10'
+  REFRESH_TOKEN_EXPIRE_DAYS: '30'
+  REFRESH_TOKEN_PREFIX: 'refresh_token:'
+  ACCOUNT_REFRESH_TOKEN_PREFIX: 'account_refresh_token:'
+
+  # OIDC配置
+  OIDC_ENABLED: 'true'
+  OIDC_CLIENT_ID: '1746716309210222592'
+  OIDC_CLIENT_SECRET: 'fa924d1252514b7f806cc4f0df2bfa5c'
+  OIDC_DISCOVERY_URL: 
+  OIDC_REDIRECT_URI: 'https://dify-sso.joiningos.com/api/enterprise/sso/oidc/callback'
+  OIDC_SCOPE: 'openid profile email'
+  OIDC_RESPONSE_TYPE: 'code'
+
+  # 数据库配置
+  DB_HOST: 'dify-postgresql-primary'
+  DB_PORT: '5432'
+  DB_DATABASE: 'dify'
+  DB_PASSWORD: 'difyai123456'
+  DB_USERNAME: 'postgres'
+
+  # Redis 配置
+  REDIS_DB: '0'
+  REDIS_HOST: 'dify-redis-master'
+  REDIS_PORT: '6379'
+  REDIS_PASSWORD: 'difyai123456'
+
+  AUTHORIZATION_ENDPOINT: 'https://sso-auth.joiningos.com:30001/sso/oauth2/authorize'
+  TOKEN_ENDPOINT: 'http://join-sso-server:8081/sso/oauth2/token'
+  USERINFO_ENDPOINT: 'http://join-sso-server:8081/sso/oauth2/userinfo'
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dify-sso
+  labels:
+    app.kubernetes.io/name: dify-sso
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dify-sso
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dify-sso
+    spec:
+      containers:
+        - name: dify-sso
+          image: harbor.joiningos.com/library/dify-sso:1.0.0
+          ports:
+            - name: api
+              containerPort: 8000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: dify-sso
+          resources:
+            limits:
+              cpu: '500m'
+              memory: '512Mi'
+            requests:
+              cpu: '100m'
+              memory: '128Mi'
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - 'sleep 10'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: api
+              scheme: HTTP
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: api
+              scheme: HTTP
+            initialDelaySeconds: 3
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 90
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+      enableServiceLinks: false
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 600
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dify-sso
+  labels:
+    app.kubernetes.io/name: dify-sso
+spec:
+  ports:
+    - name: http-api
+      protocol: TCP
+      port: 8000
+      targetPort: api
+  selector:
+    app.kubernetes.io/name: dify-sso
+  type: ClusterIP
+  sessionAffinity: None
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  internalTrafficPolicy: Cluster
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: dify-sso
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: dify-sso.joiningos.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: join-sso
+            port:
+              number: 8000
+        path: /
+        pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - dify-sso.joiningos.com
+    secretName: join-joiningos
