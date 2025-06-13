@@ -6,9 +6,9 @@ metadata:
     app.kubernetes.io/name: dify-sso
 data:
   # 服务配置
-  CONSOLE_WEB_URL: 'https://dify.joiningos.com:30001'
+  CONSOLE_WEB_URL: 'https://dify.sub.joiningos.com:30001'
   SECRET_KEY: ''
-  TENANT_ID: '68d66642-d98d-4116-9e1d-7b84355db7b6'
+  TENANT_ID: '04ad28ce-6ec2-4ed0-8042-fa91f2ccc291'
   EDITION: 'SELF_HOSTED'
   ACCESS_TOKEN_EXPIRE_MINUTES: '10'
   REFRESH_TOKEN_EXPIRE_DAYS: '30'
@@ -20,7 +20,7 @@ data:
   OIDC_CLIENT_ID: '1746716309210222592'
   OIDC_CLIENT_SECRET: 'fa924d1252514b7f806cc4f0df2bfa5c'
   OIDC_DISCOVERY_URL: 
-  OIDC_REDIRECT_URI: 'https://dify-sso.joiningos.com/api/enterprise/sso/oidc/callback'
+  OIDC_REDIRECT_URI: 'https://dify.sub.joiningos.com:30001/api/enterprise/sso/oidc/callback'
   OIDC_SCOPE: 'openid profile email'
   OIDC_RESPONSE_TYPE: 'code'
 
@@ -38,8 +38,8 @@ data:
   REDIS_PASSWORD: 'difyai123456'
 
   AUTHORIZATION_ENDPOINT: 'https://sso-auth.joiningos.com:30001/sso/oauth2/authorize'
-  TOKEN_ENDPOINT: 'http://join-sso-server:8081/sso/oauth2/token'
-  USERINFO_ENDPOINT: 'http://join-sso-server:8081/sso/oauth2/userinfo'
+  TOKEN_ENDPOINT: 'https://sso-auth.joiningos.com:30001/sso/oauth2/token'
+  USERINFO_ENDPOINT: 'https://sso-auth.joiningos.com:30001/sso/oauth2/userinfo'
 
 ---
 apiVersion: apps/v1

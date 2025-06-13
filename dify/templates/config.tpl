@@ -472,7 +472,7 @@ server {
       include proxy.conf;
     }
 
-    location ~ (/api/v1/system-features|/api/v1/enterprise/sso/) {
+    location ~ (/api/system-features|/api/enterprise/sso/) {
       proxy_pass http://dify-sso:8000;
       include proxy.conf;
     }
