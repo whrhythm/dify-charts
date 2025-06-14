@@ -60,7 +60,8 @@ spec:
     spec:
       containers:
         - name: dify-sso
-          image: harbor.joiningos.com/library/dify-sso:1.0.0
+          image: {{ .Values.image.sso.repository }}:{{ .Values.image.sso.tag }}
+          imagePullPolicy: {{ .Values.image.sso.pullPolicy }}
           ports:
             - name: api
               containerPort: 8000

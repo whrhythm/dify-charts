@@ -69,7 +69,10 @@ image:
     ##
     # pullSecrets:
     #   - myRegistryKeySecretName
-
+  sso:
+    repository: harbor.joiningos.com/library/dify-sso
+    tag: 1.0.5
+    pullPolicy: IfNotPresent
 api:
   enabled: true
   replicas: 1
