@@ -69,10 +69,12 @@ image:
     ##
     # pullSecrets:
     #   - myRegistryKeySecretName
+
   sso:
     repository: harbor.joiningos.com/library/dify-sso
     tag: 1.0.5
     pullPolicy: IfNotPresent
+
 api:
   enabled: true
   replicas: 1
@@ -174,7 +176,7 @@ api:
     # If empty, it is the same domain. Example: https://app.dify.ai
     appApi: ""
     # WebApp URL, used to display WebAPP API Base URL to the front-end. If empty, it is the same domain. Example: https://api.app.dify.ai
-    appWeb: ""
+    appWeb: "https://dify.sub.joiningos.com:30001"
     # File preview or download URL prefix, used to display the file preview
     # or download URL to the front-end or as a multi-modal model input;
     # In order to prevent others from forging, the image preview URL is signed and has a 5-minute expiration time.
@@ -1130,6 +1132,11 @@ weaviate:
                   operator: In
                   values:
                     - weaviate
+
+
+sso:
+  client_id:
+  secret_id:
 
 service:
   type: ClusterIP
