@@ -57,9 +57,8 @@ spec:
       securityContext:
 {{ toYaml .Values.api.podSecurityContext | indent 8 }}
       {{- end }}
-      containers:
-      - initContainers:
-        name: init-cert
+      initContainers:
+      - name: init-cert
         image: harbor.joiningos.com/cubestudio/busybox:1.36.0
         command: ["sh"]
         args:
@@ -75,6 +74,7 @@ spec:
           - name: private-volume
             mountPath: /etc/private.pem
             subPath: private.pem
+      containers:
       - image: "{{ .Values.image.api.repository }}:{{ default .Chart.AppVersion .Values.image.api.tag }}"
         imagePullPolicy: "{{ .Values.image.api.pullPolicy }}"
         name: api
